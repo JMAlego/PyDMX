@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 from ctypes import *
 from os import path
+from typing import List
 
-from pylibftdi import Device, Driver
+from pylibftdi import Device, Driver, LibraryMissingError
 
 from dmx.drivers import DMXDriver
 
@@ -50,12 +51,14 @@ class FT232R(Device, DMXDriver):
     _BREAK_ON = 1
 
     def __init__(self, *o, **k):
-        Device.__init__(self, *o, mode="b", **k)
+        try:
+            Device.__init__(self, *o, mode="b", **k)
+        except LibraryMissingError:
+            raise Exception("Dependency libftdi not found. Check the README for driver dependencies.")
         self.baudrate = 250000
-        self.ftdi_fn.ftdi_set_line_property(
-            FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE)
+        self.ftdi_fn.ftdi_set_line_property(FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE)
 
-    def write(self, data):
+    def write(self, data: List[int]):
         try:
             byte_data = bytes(data)
         except TypeError:
@@ -72,17 +75,14 @@ class FT232R(Device, DMXDriver):
         wait_ms(15)
 
     def _set_break_on(self):
-        self.ftdi_fn.ftdi_set_line_property2(
-            FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE,
-            FT232R._BREAK_ON)
+        self.ftdi_fn.ftdi_set_line_property2(FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE, FT232R._BREAK_ON)
 
     def _set_break_off(self):
-        self.ftdi_fn.ftdi_set_line_property2(
-            FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE,
-            FT232R._BREAK_OFF)
+        self.ftdi_fn.ftdi_set_line_property2(FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE,
+                                             FT232R._BREAK_OFF)
 
     @staticmethod
-    def get_driver_name():
+    def get_driver_name() -> str:
         return "FT232R"
 
 

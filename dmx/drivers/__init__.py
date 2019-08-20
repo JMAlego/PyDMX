@@ -2,7 +2,7 @@
 from abc import ABC, abstractmethod
 from importlib import import_module
 from os import listdir, path
-from typing import Dict, Type
+from typing import Dict, List, Type
 
 __ALL__ = ["DMXDriver", "get_drivers"]
 
@@ -25,7 +25,7 @@ class DMXDriver(ABC):
         """Close the driver."""
 
     @abstractmethod
-    def write(self):
+    def write(self, data: List[int]):
         """Write 512 bytes or less of DMX data."""
 
     @property
@@ -34,7 +34,7 @@ class DMXDriver(ABC):
         """Is the driver closed."""
 
     @staticmethod
-    def get_driver_name(_):
+    def get_driver_name():
         """Get driver name."""
         return "ABD"
 

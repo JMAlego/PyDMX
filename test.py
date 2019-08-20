@@ -5,10 +5,7 @@ from random import randint
 from sys import exit as sys_exit
 from time import sleep
 
-from dmx.colour import Colour
-from dmx.interface import DMXInterface
-from dmx.light import DMXLight3Slot
-from dmx.universe import DMXUniverse
+from dmx import Colour, DMXInterface, DMXLight3Slot, DMXUniverse
 
 
 def main():
