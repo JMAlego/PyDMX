@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 from ctypes import *
+from os import path
 
 from pylibftdi import Device, Driver
 
 from dmx.drivers import DMXDriver
 
-Driver._lib_search[
-    "libftdi"] = tuple(["./libftdi.so", "./libftdi.so.1", "./libftdi1.so"] +
-                       list(Driver._lib_search["libftdi"]))
+DRIVER_PATH = path.abspath(path.dirname(__file__))
 
+Driver._lib_search["libftdi"] = tuple([
+    path.join(DRIVER_PATH, "libftdi.so"),
+    path.join(DRIVER_PATH, "libftdi.so.1"),
+    path.join(DRIVER_PATH, "libftdi1.so")
+] + list(Driver._lib_search["libftdi"]))
 
 _LIBC = cdll.LoadLibrary("libc.so.6")
+
 
 class timespec(Structure):
     """A timespec."""

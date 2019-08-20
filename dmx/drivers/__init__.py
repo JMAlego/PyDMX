@@ -1,19 +1,21 @@
+"""Module for DMX Drivers."""
 from abc import ABC, abstractmethod
-from functools import partial
 from importlib import import_module
 from os import listdir, path
-from typing import Dict
-
+from typing import Dict, Type
 
 __ALL__ = ["DMXDriver", "get_drivers"]
 
 DRIVER_PATH = path.abspath(path.dirname(__file__))
 
-add_driver_path = partial(path.join, DRIVER_PATH)
-
 
 class DMXDriver(ABC):
-    
+    """Represents a DMX driver."""
+
+    @abstractmethod
+    def __init__(self, *args, **kwargs):
+        """Initialise the DMX driver."""
+
     @abstractmethod
     def open(self):
         """Open the driver."""
@@ -32,22 +34,22 @@ class DMXDriver(ABC):
         """Is the driver closed."""
 
     @staticmethod
-    def get_driver_name(self):
+    def get_driver_name(_):
         """Get driver name."""
         return "ABD"
 
 
-def get_drivers() -> Dict[str, DMXDriver]:
-    driver_files = map(add_driver_path, listdir(DRIVER_PATH))
-    driver_files = filter(path.isfile, driver_files)
-    driver_files = filter(lambda x: x.endswith(".py"), driver_files)
-    driver_files = filter(lambda x: not path.basename(x).startswith("__"), driver_files)
-    driver_names = map(path.basename, driver_files)
-    driver_names = map(lambda x: path.splitext(x)[0], driver_names)
+def get_drivers() -> Dict[str, Type[DMXDriver]]:
+    """Get a dictionary of driver names to drivers."""
     drivers = {}
-    for driver_name in driver_names:
-        driver_module = import_module("." + driver_name, "dmx.drivers")
-        if hasattr(driver_module, "DRIVER_CLASS"):
-            driver_class = getattr(driver_module, "DRIVER_CLASS")
-            drivers[driver_class.get_driver_name()] = driver_class
+    for driver_file in listdir(DRIVER_PATH):
+        driver_full_path = path.join(DRIVER_PATH, driver_file)
+        # We make the assumption that all drivers are .py and not in __xxx__ files.
+        if path.isfile(driver_full_path) and driver_file.endswith(".py") \
+           and not driver_file.startswith("__"):
+            driver_name = path.splitext(driver_file)[0]
+            driver_module = import_module("." + str(driver_name), "dmx.drivers")
+            if hasattr(driver_module, "DRIVER_CLASS"):
+                driver_class = getattr(driver_module, "DRIVER_CLASS")
+                drivers[driver_class.get_driver_name()] = driver_class
     return drivers
