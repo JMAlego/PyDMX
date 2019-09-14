@@ -50,9 +50,9 @@ class FT232R(Device, DMXDriver):
     _BREAK_OFF = 0
     _BREAK_ON = 1
 
-    def __init__(self, *o, **k):
+    def __init__(self, device_index=0):
         try:
-            Device.__init__(self, *o, mode="b", **k)
+            Device.__init__(self, mode="b", device_index=device_index)
         except LibraryMissingError:
             raise Exception("Dependency libftdi not found. Check the README for driver dependencies.")
         self.baudrate = 250000

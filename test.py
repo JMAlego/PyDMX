@@ -10,7 +10,8 @@ from dmx import Colour, DMXInterface, DMXLight3Slot, DMXUniverse
 
 def main():
     """Entry point function."""
-    with DMXInterface("FT232R") as interface:
+    with DMXInterface("AVRDMX") as interface:
+
         # Define DMX universe
         universe = DMXUniverse()
 
@@ -20,15 +21,20 @@ def main():
             light = DMXLight3Slot(address=1 + (3 * i))
             lights.append(light)
             universe.add_light(light)
+        light = DMXLight3Slot(address=510)
+        lights.append(light)
+        universe.add_light(light)
+
+        for light in lights:
+            random_colour = Colour(0x88, 0x26, 0xff)
+            light.set_colour(random_colour)
 
         # Play lights randomly for a bit
         for _ in range(2000):
-            for light in lights:
-                random_colour = Colour(randint(0, 255), randint(0, 255), randint(0, 255))
-                light.set_colour(random_colour)
             interface.set_frame(universe.serialise())
             interface.send_update()
-            sleep(0.2)
+
+            sleep(0.5-(15.0/1000.0))
 
     return 0
 
