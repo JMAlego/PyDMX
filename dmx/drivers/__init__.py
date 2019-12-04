@@ -36,7 +36,7 @@ class DMXDriver(ABC):
     @staticmethod
     def get_driver_name():
         """Get driver name."""
-        return "ABD"
+        return "ABC"
 
 
 def get_drivers() -> Dict[str, Type[DMXDriver]]:
@@ -48,7 +48,8 @@ def get_drivers() -> Dict[str, Type[DMXDriver]]:
         if path.isfile(driver_full_path) and driver_file.endswith(".py") \
            and not driver_file.startswith("__"):
             driver_name = path.splitext(driver_file)[0]
-            driver_module = import_module("." + str(driver_name), "dmx.drivers")
+            driver_module = import_module("." + str(driver_name),
+                                          "dmx.drivers")
             if hasattr(driver_module, "DRIVER_CLASS"):
                 driver_class = getattr(driver_module, "DRIVER_CLASS")
                 drivers[driver_class.get_driver_name()] = driver_class
