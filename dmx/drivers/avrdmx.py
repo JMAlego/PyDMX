@@ -3,7 +3,8 @@
 from os import path
 from math import ceil
 from typing import List
-from enum import Enum
+from platform import system
+from time import sleep
 
 from serial import Serial
 
@@ -21,14 +22,17 @@ class EncodingException(Exception):
 class AVRDMX(DMXDriver):
     """A DMX driver design for an Arduino based interface."""
 
-    class BaudratePreset(Enum):
+    DEFAULT_DEVICE = "COM3" if system() == "Windows" else "/dev/ttyACM0"
+
+    class BaudratePreset:
         """Enumeration of baudrate presets."""
 
         START_UP = LOW_SPEED = 9600
         NORMAL_SPEED = 115200
         HIGH_SPEED = 460800
+        DEFAULT = LOW_SPEED if system() == "Windows" else HIGH_SPEED
 
-    class _ProtocolKey(Enum):
+    class _ProtocolKey:
         """Enumeration of protocol types."""
 
         PROMPT = b'\x12'
@@ -40,7 +44,7 @@ class AVRDMX(DMXDriver):
         SENT = b'\x99'
         REPEAT_VALUE = 7
 
-    class _PacketType(Enum):
+    class _PacketType:
         """Enumeration of different packet types."""
 
         RAW_PACKET = b'\x00'
@@ -52,7 +56,7 @@ class AVRDMX(DMXDriver):
         SUM_PACKET = b'\x06'
         CONTROL_PACKET = b'\xff'
 
-    class _ControlCode(Enum):
+    class _ControlCode:
         """Enumeration of control code bytes."""
 
         NONE = b'\x00'
@@ -60,8 +64,9 @@ class AVRDMX(DMXDriver):
         SET_PBM_ON = b'\x11'
         RESET_BR = b'\x20'
         SET_BR = b'\x21'
+        SET_BR_SLOW = b'\x22'
 
-    class Encoding(Enum):
+    class Encoding:
         """Enumeration of different encoding methods."""
 
         RAW = RAW_DMX = "raw"
@@ -73,7 +78,9 @@ class AVRDMX(DMXDriver):
         SRE = SELF_REFERENTIAL = "sre"
         TCZ = TRUNCATE_ZEROS = "tcz"
 
-    def __init__(self, device="/dev/ttyACM0", baudrate=BaudratePreset.HIGH_SPEED, encoding=Encoding.RAW):
+        _ENCODINGS = (RAW, RLE, BP1, BP2, BP4, SUM, SRE, TCZ)
+
+    def __init__(self, device=DEFAULT_DEVICE, baudrate=BaudratePreset.DEFAULT, encoding=Encoding.RAW):
         """Initialise the DMX driver.
 
         Parameters
@@ -92,9 +99,9 @@ class AVRDMX(DMXDriver):
         self._baudrate = baudrate
         self._serial = None
         self._closed = True
-        if encoding not in AVRDMX.Encoding:
+        if encoding not in AVRDMX.Encoding._ENCODINGS:
             raise EncodingException("Encoding not recognised, choose one of: '{}'.".format("', '".join(
-                AVRDMX.Encoding)))
+                AVRDMX.Encoding._ENCODINGS)))
         self._encoding = encoding
 
     def write_control(self, data: List[int], control_code=_ControlCode.NONE):
@@ -130,8 +137,14 @@ class AVRDMX(DMXDriver):
         baudrate_bytes = [(new_baudrate >> 24) & 0xff, (new_baudrate >> 16) & 0xff, (new_baudrate >> 8) & 0xff,
                           new_baudrate & 0xff]
 
+        if system() == "Windows":
+            # Windows is slow so it gets it's own way to change baudrate
+            set_br_control_code = AVRDMX._ControlCode.SET_BR_SLOW
+        else:
+            set_br_control_code = AVRDMX._ControlCode.SET_BR
+
         # Send control signal to change baudrate
-        self.write_control(data=baudrate_bytes, control_code=AVRDMX._ControlCode.SET_BR)
+        self.write_control(data=baudrate_bytes, control_code=set_br_control_code)
 
         # AVRDMX will now change baudrate and then, after 100ms, it will send
         # a response byte at the new baudrate to confirm. During this time we
@@ -141,9 +154,8 @@ class AVRDMX(DMXDriver):
         # Update internal baudrate setting.
         self._baudrate = new_baudrate
 
-        # Restart serial connection at new baudrate
-        self._serial.close()
-        self._serial = Serial(self._device, self._baudrate)
+        # Change the serial connection to the new baudrate
+        self._serial.baudrate = self._baudrate
 
         # Wait for confirmation of change from the AVRDMX
         response = self._serial.read(1)
