@@ -25,6 +25,10 @@ class DMXUniverse:
         """Check if the universe has a light."""
         return light in self._lights
 
+    def get_lights(self) -> Set[DMXLight]:
+        """Get all lights in this universe."""
+        return self._lights
+
     def serialise(self) -> List[int]:
         """Serialise all the content of the DMX universe.
 

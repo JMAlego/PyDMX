@@ -1,8 +1,8 @@
 """Module for DMX interface."""
-from typing import List
+from typing import List, Optional
 
 from dmx.constants import DMX_MAX_ADDRESS
-from dmx.drivers import get_drivers
+from dmx.drivers import DMXDriver, get_drivers
 
 
 class DMXInterface:
@@ -10,7 +10,7 @@ class DMXInterface:
 
     def __init__(self, driver_name: str, *args, **kwards):
         """Initialise the DMX interface."""
-        self._device = None
+        self._device = None  #  type: Optional[DMXDriver]
         self._frame_state = []  # type: List[int]
         self.clear_state()
         self._set_device_driver(driver_name, *args, **kwards)
