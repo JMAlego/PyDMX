@@ -34,7 +34,7 @@ def main():
             interface.set_frame(universe.serialise())
             interface.send_update()
 
-            sleep(0.5-(15.0/1000.0))
+            sleep(0.5 - (15.0 / 1000.0))
 
     return 0
 

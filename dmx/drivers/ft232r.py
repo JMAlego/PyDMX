@@ -57,8 +57,7 @@ elif system() == "Windows":
         timer_handle = _WIN32.CreateWaitableTimerW(None, True, None)
         if timer_handle == 0:
             raise Exception("CreateWaitableTimerW returned NULL")
-        if _WIN32.SetWaitableTimer(timer_handle, byref(wait_time), 0, None,
-                                   None, False) == 0:
+        if _WIN32.SetWaitableTimer(timer_handle, byref(wait_time), 0, None, None, False) == 0:
             raise Exception("SetWaitableTimer returned 0")
         _WIN32.WaitForSingleObject(timer_handle, _INFINITE)
         _WIN32.CloseHandle(timer_handle)
@@ -69,8 +68,7 @@ elif system() == "Windows":
         timer_handle = _WIN32.CreateWaitableTimerW(None, True, None)
         if timer_handle == 0:
             raise Exception("CreateWaitableTimerW returned NULL")
-        if _WIN32.SetWaitableTimer(timer_handle, byref(wait_time), 0, None,
-                                   None, False) == 0:
+        if _WIN32.SetWaitableTimer(timer_handle, byref(wait_time), 0, None, None, False) == 0:
             raise Exception("SetWaitableTimer returned 0")
         _WIN32.WaitForSingleObject(timer_handle, _INFINITE)
         _WIN32.CloseHandle(timer_handle)
@@ -90,12 +88,9 @@ class FT232R(Device, DMXDriver):
         try:
             Device.__init__(self, mode="b", device_index=device_index)
         except LibraryMissingError:
-            raise Exception(
-                "Dependency libftdi not found. Check the README for driver dependencies."
-            )
+            raise Exception("Dependency libftdi not found. Check the README for driver dependencies.")
         self.baudrate = 250000
-        self.ftdi_fn.ftdi_set_line_property(
-            FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE)
+        self.ftdi_fn.ftdi_set_line_property(FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE)
 
     def write(self, data: List[int]):
         """Write 512 bytes or less of DMX data."""
@@ -115,14 +110,11 @@ class FT232R(Device, DMXDriver):
         wait_ms(15)
 
     def _set_break_on(self):
-        self.ftdi_fn.ftdi_set_line_property2(
-            FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE,
-            FT232R._BREAK_ON)
+        self.ftdi_fn.ftdi_set_line_property2(FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE, FT232R._BREAK_ON)
 
     def _set_break_off(self):
-        self.ftdi_fn.ftdi_set_line_property2(
-            FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE,
-            FT232R._BREAK_OFF)
+        self.ftdi_fn.ftdi_set_line_property2(FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE,
+                                             FT232R._BREAK_OFF)
 
     @staticmethod
     def get_driver_name() -> str:

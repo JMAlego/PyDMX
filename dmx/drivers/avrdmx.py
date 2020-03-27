@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Driver for AVR DMX 1 Arduino DMX interface."""
-from os import path
 from math import ceil
-from typing import List
+from os import path
 from platform import system
 from time import sleep
+from typing import List, cast
+from warnings import warn
 
 from serial import Serial
 
@@ -29,8 +30,9 @@ class AVRDMX(DMXDriver):
 
         START_UP = LOW_SPEED = 9600
         NORMAL_SPEED = 115200
+        SAFE_HIGH_SPEED = 230400
         HIGH_SPEED = 460800
-        DEFAULT = LOW_SPEED if system() == "Windows" else HIGH_SPEED
+        DEFAULT = SAFE_HIGH_SPEED if system() == "Windows" else HIGH_SPEED
 
     class _ProtocolKey:
         """Enumeration of protocol types."""
@@ -80,7 +82,10 @@ class AVRDMX(DMXDriver):
 
         _ENCODINGS = (RAW, RLE, BP1, BP2, BP4, SUM, SRE, TCZ)
 
-    def __init__(self, device=DEFAULT_DEVICE, baudrate=BaudratePreset.DEFAULT, encoding=Encoding.RAW):
+    def __init__(self,
+                 device=DEFAULT_DEVICE,
+                 baudrate=BaudratePreset.DEFAULT,
+                 encoding=Encoding.RAW):
         """Initialise the DMX driver.
 
         Parameters
@@ -97,11 +102,13 @@ class AVRDMX(DMXDriver):
         """
         self._device = device
         self._baudrate = baudrate
+        if system() == "Windows" and self._baudrate > 230400:
+            warn("Setting baudrate to above 230400 baud has been found to cause issues on Windows.")
         self._serial = None
         self._closed = True
         if encoding not in AVRDMX.Encoding._ENCODINGS:
-            raise EncodingException("Encoding not recognised, choose one of: '{}'.".format("', '".join(
-                AVRDMX.Encoding._ENCODINGS)))
+            raise EncodingException("Encoding not recognised, choose one of: '{}'.".format(
+                "', '".join(AVRDMX.Encoding._ENCODINGS)))
         self._encoding = encoding
 
     def write_control(self, data: List[int], control_code=_ControlCode.NONE):
@@ -116,7 +123,9 @@ class AVRDMX(DMXDriver):
             A single byte representing the control code to be sent.
 
         """
-        self._write_raw(data, control_code=control_code, packet_type=AVRDMX._PacketType.CONTROL_PACKET)
+        self._write_raw(data,
+                        control_code=control_code,
+                        packet_type=AVRDMX._PacketType.CONTROL_PACKET)
 
     def change_baudrate(self, new_baudrate: int):
         """Change the baudrate used for data transfer.
@@ -134,8 +143,8 @@ class AVRDMX(DMXDriver):
 
         """
         # Encode the baudrate as a 32bit big-endian unsigned number and pack into bytes.
-        baudrate_bytes = [(new_baudrate >> 24) & 0xff, (new_baudrate >> 16) & 0xff, (new_baudrate >> 8) & 0xff,
-                          new_baudrate & 0xff]
+        baudrate_bytes = [(new_baudrate >> 24) & 0xff, (new_baudrate >> 16) & 0xff,
+                          (new_baudrate >> 8) & 0xff, new_baudrate & 0xff]
 
         if system() == "Windows":
             # Windows is slow so it gets it's own way to change baudrate
@@ -184,7 +193,9 @@ class AVRDMX(DMXDriver):
         """
         byte_data = bytes(data)
         if isinstance(packet_type, int):
-            packet_type = bytes([packet_type])
+            packet_type_bytes = bytes([packet_type])
+        else:
+            packet_type_bytes = cast(bytes, packet_type)
 
         response = self._serial.read(1)
 
@@ -195,14 +206,14 @@ class AVRDMX(DMXDriver):
 
         length = len(byte_data)
 
-        header = length & 0xffff
-        header = packet_type + bytes([header & 0xff, (header >> 8) & 0xff])
+        length = length & 0xffff
+        header = packet_type_bytes + bytes([length & 0xff, (length >> 8) & 0xff])
 
         self._serial.write(header + byte_data)
 
         response = self._serial.read(1)
 
-        if packet_type == AVRDMX._PacketType.CONTROL_PACKET:
+        if packet_type_bytes == AVRDMX._PacketType.CONTROL_PACKET:
             if response != AVRDMX._ProtocolKey.RESPONSE:
                 self._handle_error(response)
 
@@ -293,10 +304,12 @@ class AVRDMX(DMXDriver):
             elif error_code == 0x03:
                 raise ProtocolException("Read timed-out before completion of packet header.")
             elif error_code == 0x04:
-                raise ProtocolException("Received too much data. This is unlikely without memory corruption.")
+                raise ProtocolException(
+                    "Received too much data. This is unlikely without memory corruption.")
             elif error_code == 0x05:
                 raise ProtocolException(
-                    "Read timed-out, not enough data received. Packet length might have been wrong?")
+                    "Read timed-out, not enough data received. Packet length might have been wrong?"
+                )
             else:
                 raise ProtocolException("Unknown error with code: 0x{}.".format(error_code.hex()))
         # If we received a non-error byte which was unexpected at this time.
