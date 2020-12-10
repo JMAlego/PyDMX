@@ -62,6 +62,10 @@ The core modules do not depend on any other python modules or external dependenc
 
 The FT232R driver is designed to work with the FTDI FT232R chip which is a USB to serial chip made by FTDI (Future Technology Devices International). It is specifically designed to work with the USB to DMX adapter board made by the UoY CS lab techs. It is untested with any other hardware configuration.
 
+#### Dependencies
+
+The FT232R driver requires the python module `pylibftdi` which in turn requires the `libftdi` shared library be installed.
+
 ### AVRDMX
 
 The AVRDMX driver is designed to work with the [AVR-DMX](https://github.com/JMAlego/AVR-DMX) firmware I created for the Arduino Uno. It is capable of using all the modes completed on the AVR-DMX project and is effectively a reference implementation of a driver for that project. When combined with the [DMX Shield](https://github.com/JMAlego/ArDMX) I designed for the Arduino Uno it should allow for pretty easy interfacing with a DMX network.
@@ -73,10 +77,6 @@ The debug interface is designed to output to the terminal the data that would be
 ### Dummy
 
 The dummy interface does nothing. It's there simply as a placeholder for testing or any other use which does not require an actual interface.
-
-#### Dependencies
-
-The FT232R driver requires the python module `pylibftdi` which in turn requires the `libftdi` shared library be installed. The driver also currently requires Linux due to its use of `libc` via ctypes (this should be rectified in a later version).
 
 ## Usage
 
