@@ -1,0 +1,21 @@
+[project]
+name = "PyDMX-Drivers-FTDI"
+version = "0.1.0"
+authors = [
+  { name="Jacob Allen", email="jacob@polyomino.xyz" },
+]
+description = "Device drivers for PyDMX for FTDI-based devices. Not affiliated with FTDI."
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+]
+dependencies = ["pylibftdi>=0.18.1", "pydmx >=0.1.0"]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"

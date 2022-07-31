@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Test script to show how to use module."""
 
-from random import randint
 from sys import exit as sys_exit
 from time import sleep
 

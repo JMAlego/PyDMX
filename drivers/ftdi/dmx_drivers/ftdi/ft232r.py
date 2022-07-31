@@ -1,5 +1,35 @@
-#!/usr/bin/env python3
 """A DMX driver design for the University of York Serial-to-DMX usb adapter based on the FT232R."""
+
+# BSD 3-Clause License
+#
+# Copyright (c) 2019-2022, Jacob Allen
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice, this
+#    list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 from os import path
 from platform import system
 from typing import List
@@ -88,9 +118,11 @@ class FT232R(Device, DMXDriver):
         try:
             Device.__init__(self, mode="b", device_index=device_index)
         except LibraryMissingError:
-            raise Exception("Dependency libftdi not found. Check the README for driver dependencies.")
+            raise Exception(
+                "Dependency libftdi not found. Check the README for driver dependencies.")
         self.baudrate = 250000
-        self.ftdi_fn.ftdi_set_line_property(FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE)
+        self.ftdi_fn.ftdi_set_line_property(FT232R._BITS_8, FT232R._STOP_BITS_2,
+                                            FT232R._PARITY_NONE)
 
     def write(self, data: List[int]):
         """Write 512 bytes or less of DMX data."""
@@ -110,11 +142,12 @@ class FT232R(Device, DMXDriver):
         wait_ms(15)
 
     def _set_break_on(self):
-        self.ftdi_fn.ftdi_set_line_property2(FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE, FT232R._BREAK_ON)
+        self.ftdi_fn.ftdi_set_line_property2(FT232R._BITS_8, FT232R._STOP_BITS_2,
+                                             FT232R._PARITY_NONE, FT232R._BREAK_ON)
 
     def _set_break_off(self):
-        self.ftdi_fn.ftdi_set_line_property2(FT232R._BITS_8, FT232R._STOP_BITS_2, FT232R._PARITY_NONE,
-                                             FT232R._BREAK_OFF)
+        self.ftdi_fn.ftdi_set_line_property2(FT232R._BITS_8, FT232R._STOP_BITS_2,
+                                             FT232R._PARITY_NONE, FT232R._BREAK_OFF)
 
     @staticmethod
     def get_driver_name() -> str:

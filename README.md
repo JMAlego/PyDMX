@@ -2,7 +2,9 @@
 
 ## Introduction
 
-PyDMX is a module capable of sending DMX512 data via a driver. It was created to allow demonstrations on open days of DMX-based projects created at the University of York Department of Computer Science (UoY CS).
+PyDMX is a package capable of sending DMX512 data via a driver. It was created to allow demonstrations on open days of DMX-based projects created at the University of York Department of Computer Science (UoY CS).
+
+The project consists of a core package and a series of optional driver packages for particular hardware and devices.
 
 ## DMX512 Protocol
 
@@ -37,7 +39,7 @@ A light will typically take an "address" which is the channel index (starting at
 
 For example a light might be set to address eight, but listen on channels 8 9, and 10. It could then use each channel as a component of an RGB colour value.
 
-Importantly for writing software relating to DMX, the standard does not specify how to encode different types of data in slots. Therefore, each light manufacturer, or even light, does it differently. There is nothing stopping a manufacturer allowing you to select discontiguous addresses for each 8 bit value, or any number of more convoluted solutions.
+Importantly for writing software relating to DMX, the standard does not specify how to encode different types of data in slots. Therefore, each light manufacturer, or even light, does it differently. There is nothing stopping a manufacturer allowing you to select noncontiguous addresses for each 8 bit value, or any number of more convoluted solutions.
 
 ## Core
 
@@ -58,23 +60,33 @@ The core modules do not depend on any other python modules or external dependenc
 
 ## Drivers
 
-### FT232R
+### FTDI
+
+_This project is not affiliated with FTDI._
+
+#### FT232R
 
 The FT232R driver is designed to work with the FTDI FT232R chip which is a USB to serial chip made by FTDI (Future Technology Devices International). It is specifically designed to work with the USB to DMX adapter board made by the UoY CS lab techs. It is untested with any other hardware configuration.
 
 #### Dependencies
 
-The FT232R driver requires the python module `pylibftdi` which in turn requires the `libftdi` shared library be installed.
+The FTDI drivers requires the python module `pylibftdi` which in turn requires the `libftdi` shared library be installed.
 
-### AVRDMX
+### Arduino
+
+_This project is not affiliated with Arduino._
+
+#### AVRDMX
 
 The AVRDMX driver is designed to work with the [AVR-DMX](https://github.com/JMAlego/AVR-DMX) firmware I created for the Arduino Uno. It is capable of using all the modes completed on the AVR-DMX project and is effectively a reference implementation of a driver for that project. When combined with the [DMX Shield](https://github.com/JMAlego/ArDMX) I designed for the Arduino Uno it should allow for pretty easy interfacing with a DMX network.
 
-### Debug
+### Built-in Drivers
+
+#### Debug
 
 The debug interface is designed to output to the terminal the data that would be sent to a interface hardware/drivers. It is also capable of estimating the refresh rate of signals being sent out, though this is effected by platform due to the massively slow terminal output of Windows compared to other platforms.
 
-### Dummy
+#### Dummy
 
 The dummy interface does nothing. It's there simply as a placeholder for testing or any other use which does not require an actual interface.
 
@@ -114,4 +126,10 @@ with DMXInterface("FT232R") as interface:
     interface.send_update()
 ```
 
-A further example program is available in the `test.py` file in the repository root.
+To run the above example you would need to install the core package `PyDMX` and the FTDI driver package `PyDMX-Drivers-FTDI`.
+
+A further example program is available in the `examples/simple.py` file in the repository root.
+
+## License
+
+This project is licensed under the BSD 3-Clause License. See the LICENSE file for more details.
