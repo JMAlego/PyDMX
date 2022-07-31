@@ -41,9 +41,46 @@ For example a light might be set to address eight, but listen on channels 8 9, a
 
 Importantly for writing software relating to DMX, the standard does not specify how to encode different types of data in slots. Therefore, each light manufacturer, or even light, does it differently. There is nothing stopping a manufacturer allowing you to select noncontiguous addresses for each 8 bit value, or any number of more convoluted solutions.
 
-## Core & Drivers
+## Core
 
-More information about the core and drivers can be found in their respective READMEs in the subdirectories of this project.
+The core of PyDMX has the following classes:
+
+- DMXUniverse: represents a DMX universe
+- DMXInterface: allows simple control of a DMX driver
+- DMXLight: abstract base for lights
+  - DMXLight3Slot: represents a 3 slot RGB light
+  - DMXLight7Slot: represents a 7 slot RGB moving light
+- DMXDriver: represents a DMX output driver
+  - Drivers are subclasses of this class
+- Colour: represents a 24-bit RGB colour value
+
+### Dependencies
+
+The core modules do not depend on any other python modules or external dependencies.
+
+## Drivers
+
+### FTDI
+
+_This project is not affiliated with FTDI._
+
+This driver package can be found at [PyDMX-Drivers-FTDI](https://pypi.org/project/pydmx-drivers-ftdi/).
+
+### Arduino
+
+_This project is not affiliated with Arduino._
+
+This driver package can be found at [PyDMX-Drivers-Arduino](https://pypi.org/project/pydmx-drivers-arduino/).
+
+### Built-in Drivers
+
+#### Debug
+
+The debug interface is designed to output to the terminal the data that would be sent to a interface hardware/drivers. It is also capable of estimating the refresh rate of signals being sent out, though this is effected by platform due to the massively slow terminal output of Windows compared to other platforms.
+
+#### Dummy
+
+The dummy interface does nothing. It's there simply as a placeholder for testing or any other use which does not require an actual interface.
 
 ## Usage
 

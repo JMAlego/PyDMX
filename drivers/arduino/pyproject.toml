@@ -16,6 +16,10 @@ classifiers = [
 ]
 dependencies = ["pyserial>=3.4", "pydmx >=0.1.0"]
 
+[project.urls]
+"Homepage" = "https://github.com/JMAlego/PyDMX"
+"Bug Tracker" = "https://github.com/JMAlego/PyDMX/issues"
+
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
