@@ -6,7 +6,7 @@ authors = [
 ]
 description = "Device drivers for PyDMX for Arduino-based devices. Not affiliated with Arduino."
 readme = "README.md"
-license = { file="LICENSE" }
+license = { text = "BSD-3-Clause" }
 requires-python = ">=3.7"
 classifiers = [
     "Programming Language :: Python :: 3",
