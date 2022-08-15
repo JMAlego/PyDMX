@@ -1,6 +1,6 @@
 [project]
 name = "PyDMX"
-version = "0.1.0"
+version = "0.1.1"
 authors = [
   { name="Jacob Allen", email="jacob@polyomino.xyz" },
 ]
