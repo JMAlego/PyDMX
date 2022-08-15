@@ -32,7 +32,7 @@
 
 from typing import List, Set
 
-from dmx.constants import DMX_MAX_ADDRESS
+from dmx.constants import DMX_MAX_ADDRESS, DMX_EMPTY_BYTE
 from dmx.light import DMXLight
 
 
@@ -60,16 +60,37 @@ class DMXUniverse:
         """Get all lights in this universe."""
         return self._lights
 
-    def serialise(self) -> List[int]:
+    def serialise(self, partial: bool = False) -> List[int]:
         """Serialise all the content of the DMX universe.
 
         Creates a frame which will update all lights to their current state.
+
+        If `partial` is `True` then only up to the highest light address in the
+        `Universe` will be serialised.
         """
-        frame = [0] * DMX_MAX_ADDRESS
+        # assume by default that we want to send a whole frame even if we don't
+        # have lights configured in some sections of it
+        frame_size = DMX_MAX_ADDRESS
+
+        # if we only send what we need to (e.g. partially send the frame) we
+        # have to work out how big the frame should be ahead of time
+        if partial:
+            # addresses are 1-indexed so the lowest address is 1 and the
+            # highest is 512, as such we don't need to add one to size here for
+            # it to get the frame size right
+            frame_size = max(light.end_address for light in self._lights)
+
+        frame = [DMX_EMPTY_BYTE] * frame_size
+
         for light in self._lights:
             serialised_light = light.serialise()
+
             for address in range(light.start_address, light.end_address + 1):
+                if partial and len(frame) < address:
+                    frame.extend([DMX_EMPTY_BYTE] * (address - len(frame)))
+
                 frame[address - 1] |= serialised_light[address - light.start_address]
+
         return frame
 
     def serialize(self, partial: bool = False) -> List[int]:
