@@ -46,6 +46,10 @@ class Colour:
         """Serialise the colour in RGB order to a sequence of bytes."""
         return [self._red, self._green, self._blue]
 
+    def serialize(self) -> List[int]:
+        """Alias of `serialise`."""
+        return self.serialise()
+
     @property
     def red(self) -> int:
         """Get red component."""
@@ -137,3 +141,6 @@ GREEN = Colour(0, 255, 0)
 BLUE = Colour(0, 0, 255)
 WHITE = Colour(255, 255, 255)
 BLACK = Colour(0, 0, 0)
+
+# Alias of `Colour`.
+Color = Colour

@@ -34,9 +34,7 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from dmx.colour import BLACK, Colour
-
-DMX_MAX_ADDRESS = 512
-DMX_MIN_ADDRESS = 1
+from dmx.constants import DMX_MAX_ADDRESS, DMX_MIN_ADDRESS
 
 
 class DMXLight(ABC):
@@ -49,6 +47,10 @@ class DMXLight(ABC):
     @abstractmethod
     def serialise(self) -> List[int]:
         """Serialise the DMX light to a sequence of bytes."""
+
+    def serialize(self) -> List[int]:
+        """Alias of `serialise`."""
+        return self.serialise()
 
     @property
     def start_address(self) -> int:

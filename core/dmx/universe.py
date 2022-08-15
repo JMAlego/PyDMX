@@ -71,3 +71,7 @@ class DMXUniverse:
             for address in range(light.start_address, light.end_address + 1):
                 frame[address - 1] |= serialised_light[address - light.start_address]
         return frame
+
+    def serialize(self, partial: bool = False) -> List[int]:
+        """Alias of `serialise`."""
+        return self.serialise(partial=partial)
