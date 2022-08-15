@@ -30,10 +30,18 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from typing import List, Set
+from typing import Iterator, List, Set
 
-from dmx.constants import DMX_MAX_ADDRESS, DMX_EMPTY_BYTE
+from dmx.constants import DMX_EMPTY_BYTE, DMX_MAX_ADDRESS, DMX_MIN_ADDRESS
 from dmx.light import DMXLight
+
+
+def _circular_range(start: int, stop: int, modulo: int) -> Iterator[int]:
+    """A circular range from start to stop mod some value."""
+    counter = start
+    while counter != stop and counter < modulo:
+        yield counter
+        counter = (counter + 1) % modulo
 
 
 class DMXUniverse:
@@ -75,24 +83,37 @@ class DMXUniverse:
         # if we only send what we need to (e.g. partially send the frame) we
         # have to work out how big the frame should be ahead of time
         if partial:
-            # addresses are 1-indexed so the lowest address is 1 and the
-            # highest is 512, as such we don't need to add one to size here for
-            # it to get the frame size right
-            frame_size = max(light.end_address for light in self._lights)
+            if self._lights:
+                # addresses are 1-indexed so the lowest address is 1 and the
+                # highest is 512, as such we don't need to add one to size here
+                # for it to get the frame size right
+                frame_size = max(light.highest_address for light in self._lights)
+            else:
+                frame_size = 0
 
         frame = [DMX_EMPTY_BYTE] * frame_size
 
         for light in self._lights:
             serialised_light = light.serialise()
 
-            for address in range(light.start_address, light.end_address + 1):
+            # translate to zero-indexed ranges for modular range
+            zero_indexed_range_start = light.start_address - DMX_MIN_ADDRESS
+            zero_indexed_range_end = light.end_address
+
+            for index, address in enumerate(
+                    _circular_range(zero_indexed_range_start, zero_indexed_range_end,
+                                    DMX_MAX_ADDRESS)):
+                # back to real DMX address which is one-indexed
+                address += DMX_MIN_ADDRESS
+
                 if partial and len(frame) < address:
                     frame.extend([DMX_EMPTY_BYTE] * (address - len(frame)))
 
-                frame[address - 1] |= serialised_light[address - light.start_address]
+                # the index here is a counter for the light's internet
+                frame[address - DMX_MIN_ADDRESS] |= serialised_light[index]
 
         return frame
 
-    def serialize(self, partial: bool = False) -> List[int]:
+    def serialize(self, *args, **kwargs) -> List[int]:
         """Alias of `serialise`."""
-        return self.serialise(partial=partial)
+        return self.serialise(*args, **kwargs)

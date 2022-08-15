@@ -48,9 +48,9 @@ class DMXLight(ABC):
     def serialise(self) -> List[int]:
         """Serialise the DMX light to a sequence of bytes."""
 
-    def serialize(self) -> List[int]:
+    def serialize(self, *args, **kwargs) -> List[int]:
         """Alias of `serialise`."""
-        return self.serialise()
+        return self.serialise(*args, **kwargs)
 
     @property
     def start_address(self) -> int:
@@ -62,8 +62,15 @@ class DMXLight(ABC):
         """End address (inclusive) of the light."""
         end_address = self._address + self.slot_count - 1
         if end_address > DMX_MAX_ADDRESS or end_address < DMX_MIN_ADDRESS:
-            return (end_address % DMX_MAX_ADDRESS) + DMX_MIN_ADDRESS
+            return ((end_address - DMX_MIN_ADDRESS) % DMX_MAX_ADDRESS) + DMX_MIN_ADDRESS
         return end_address
+
+    @property
+    def highest_address(self) -> int:
+        """Highest address used by this light."""
+        if self.end_address < self.start_address:
+            return DMX_MAX_ADDRESS
+        return self.end_address
 
     @property
     def slot_count(self) -> int:
@@ -87,6 +94,10 @@ class DMXLight3Slot(DMXLight):
     def set_colour(self, colour: Colour):
         """Set the colour for the light."""
         self._colour = colour
+
+    def set_color(self, *args, **kwargs):
+        """Alias for `set_colour`."""
+        self.set_colour(*args, **kwargs)
 
     def serialise(self) -> List[int]:
         """Serialise the DMX light to a sequence of bytes."""

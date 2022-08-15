@@ -46,9 +46,9 @@ class Colour:
         """Serialise the colour in RGB order to a sequence of bytes."""
         return [self._red, self._green, self._blue]
 
-    def serialize(self) -> List[int]:
+    def serialize(self, *args, **kwargs) -> List[int]:
         """Alias of `serialise`."""
-        return self.serialise()
+        return self.serialise(*args, **kwargs)
 
     @property
     def red(self) -> int:
